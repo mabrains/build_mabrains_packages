@@ -16,8 +16,7 @@ on:
 env:
   GITHUB_TOKEN: ${{ github.token }}
   DOCKER_BUILDKIT: 1
-  IMAGE_VERSION: v0.0.1
-  IMAGE: ghcr.io/mabrains/pdk_regression_${{ IMAGE_VERSION }}
+  IMAGE: ghcr.io/mabrains/pdk_regression_v0.0.1
   KLAYOUT_VERSION: v0.27.12
 
 jobs:
