@@ -2,7 +2,7 @@
 # Copyright 2022 Mabrains
 ###############################################################
 
-name: PDK regression testing
+name: Build Docker Images
 
 concurrency:
   group: ${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}
@@ -50,3 +50,4 @@ jobs:
             echo '${{ github.token }}' | docker login ghcr.io -u gha --password-stdin
             docker push "$IMAGE"
           post: docker logout ghcr.io
+
