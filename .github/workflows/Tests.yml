@@ -40,6 +40,7 @@ jobs:
           RUN git clone https://github.com/KLayout/klayout.git
           RUN cd klayout && git checkout $KLAYOUT_VERSION && ./build.sh -j$(nproc) && mkdir -p /tools/klayout-$KLAYOUT_VERSION && cp -rf bin-release/* /tools/klayout-$KLAYOUT_VERSION
           RUN wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh && chmod +x https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh && ./Anaconda3-2022.10-Linux-x86_64.sh -b && $HOME/anaconda3/bin/conda init
+          RUN echo 'export PATH=/tools/klayout-$KLAYOUT_VERSION:$PATH\nexport LD_LIBRARY_PATH=/tools/klayout-$KLAYOUT_VERSION:$LD_LIBRARY_PATH' > setup_tools.sh
           EOF
 
       - name: Push container image to registry
