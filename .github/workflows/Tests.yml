@@ -42,6 +42,7 @@ jobs:
           RUN echo 'export PATH=/tools/klayout-$KLAYOUT_VERSION:$PATH; export LD_LIBRARY_PATH=/tools/klayout-$KLAYOUT_VERSION:$LD_LIBRARY_PATH;' >> /root/.bashrc
           RUN pip3 install docopt pandas gdsfactory[full]
           RUN pip3 install sax[jax] gdsfactory[sipann]
+          RUN pip3 cache purge
           EOF
 
       - name: Push container image to registry
