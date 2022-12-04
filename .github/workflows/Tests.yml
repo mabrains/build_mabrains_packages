@@ -17,7 +17,7 @@ env:
   GITHUB_TOKEN: ${{ github.token }}
   DOCKER_BUILDKIT: 1
   IMAGE: ghcr.io/mabrains/pdk_regression_v0.0.1
-  KLAYOUT_VERSION: v0.27.12
+  KLAYOUT_VERSION: v0.28_dev
 
 jobs:
   BuildContainerImage:
@@ -38,10 +38,9 @@ jobs:
            && rm -rf /var/lib/apt/lists/*
 
           RUN git clone https://github.com/KLayout/klayout.git
-          RUN cd klayout && git checkout $KLAYOUT_VERSION && ./build.sh -j$(nproc) && mkdir -p /tools/klayout-$KLAYOUT_VERSION && cp -rf bin-release/* /tools/klayout-$KLAYOUT_VERSION && cd .. && rm -rf klayout
+          RUN cd klayout && ./build.sh -j$(nproc) && mkdir -p /tools/klayout-$KLAYOUT_VERSION && cp -rf bin-release/* /tools/klayout-$KLAYOUT_VERSION && cd .. && rm -rf klayout
           RUN echo 'export PATH=/tools/klayout-$KLAYOUT_VERSION:$PATH; export LD_LIBRARY_PATH=/tools/klayout-$KLAYOUT_VERSION:$LD_LIBRARY_PATH;' >> /root/.bashrc
-          RUN pip3 install docopt pandas gdsfactory[full]
-          RUN pip3 install sax[jax] gdsfactory[sipann]
+          RUN pip3 install docopt pandas gdsfactory gdstk
           RUN pip3 cache purge
           EOF
 
