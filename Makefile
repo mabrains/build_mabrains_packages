@@ -1,11 +1,32 @@
-klayout_version	    = "v0.28_dev"
-klayout_link        ="https://github.com/KLayout/klayout.git"
-xyce_version          = "Release-7.6.0"
-xyce_link           ="https://github.com/Xyce/Xyce.git"
-ngspice_version     = "38"
-ngspice_link        ="https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/$(ngspice_version)/ngspice-$(ngspice_version).tar.gz"
+# Copyright 2022 Mabrains
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# 
 
-ENV_PATH         ?= "/tools_path"
+# =================================================================================================================
+# ----------------------------------------------- Tools Installation ----------------------------------------------
+# =================================================================================================================
+
+
+
+klayout_version	    = "v0.28_dev"
+klayout_link        = "https://github.com/KLayout/klayout.git"
+xyce_version        = "Release-7.6.0"
+xyce_link           = "https://github.com/Xyce/Xyce.git"
+ngspice_version     = "38"
+ngspice_link        = "https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/$(ngspice_version)/ngspice-$(ngspice_version).tar.gz"
+ENV_PATH           ?= "/tools_path"
 all: tools_srcs  dep install_libraries install_klayout  build_ngspice_lib install_ngspice  install_xyce clean_builds
 ############################################
 .ONESHELL:
