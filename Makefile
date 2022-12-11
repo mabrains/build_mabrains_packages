@@ -1,7 +1,6 @@
-ENV_PATH         	= "/open_design_environment"
 klayout_version	    = "v0.28_dev"
 klayout_link        ="https://github.com/KLayout/klayout.git"
-xyce_version          = "Release-7.5.0"
+xyce_version          = "Release-7.6.0"
 xyce_link           ="https://github.com/Xyce/Xyce.git"
 ngspice_version     = "38"
 ngspice_link        ="https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/$(ngspice_version)/ngspice-$(ngspice_version).tar.gz"
