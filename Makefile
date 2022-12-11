@@ -20,7 +20,7 @@
 
 
 
-klayout_version	    = "v0.28_dev"
+klayout_version	    = "0.28"
 klayout_link        = "https://github.com/KLayout/klayout.git"
 xyce_version        = "Release-7.6.0"
 xyce_link           = "https://github.com/Xyce/Xyce.git"
@@ -50,10 +50,15 @@ dep:
 ###############################################
 .ONESHELL:
 install_klayout: tools_srcs
+	echo 'klayout installation';\
 	cd tools_srcs ;\
 	git clone $(klayout_link);\
-	cd klayout && ./build.sh -j$(nproc) && mkdir -p /tools/klayout-$KLAYOUT_VERSION && cp -rf bin-release/* /tools/klayout-$KLAYOUT_VERSION && cd .. && rm -rf klayout
-	echo 'export PATH=/tools/klayout-$KLAYOUT_VERSION:$PATH; export LD_LIBRARY_PATH=/tools/klayout-$KLAYOUT_VERSION:$LD_LIBRARY_PATH;' >> /root/.bashrc
+	mkdir -p  $(ENV_PATH)/tools/klayout-$(klayout_version);\
+        cd klayout ;\
+	git checkout $(klayout_version);\
+	./build.sh -j$$(nproc) ;\
+	mv -f build-release/ bin-release/ $(ENV_PATH)/tools/klayout-$(klayout_version)/;\	
+	echo 'export PATH=/tools/klayout-$KLAYOUT_VERSION:$PATH; export LD_LIBRARY_PATH=/tools/klayout-$KLAYOUT_VERSION:$LD_LIBRARY_PATH;' >> /root/.bashrc;\
 ######################################################
 .ONESHELL:
 download_ngspice: tools_srcs
@@ -64,7 +69,6 @@ download_ngspice: tools_srcs
 .ONESHELL:
 build_ngspice_lib: download_ngspice 
 	mkdir -p  $(ENV_PATH)/tools/ngspice-$(ngspice_version)/lib;\
-	mkdir -p tools_srcs/ngspice-$(ngspice_version)/build-lib ;\
 	cd tools_srcs/ngspice-$(ngspice_version)/build-lib;\
 	../configure prefix=$(ENV_PATH)/tools/ngspice-$(ngspice_version) --enable-cider --enable-xspice --enable-openmp --enable-pss --with-readline=yes --disable-debug --with-x --with-ngshared;\
 	make -j$$(nproc);\
