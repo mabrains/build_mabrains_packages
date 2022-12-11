@@ -5,7 +5,7 @@ xyce_link           ="https://github.com/Xyce/Xyce.git"
 ngspice_version     = "38"
 ngspice_link        ="https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/$(ngspice_version)/ngspice-$(ngspice_version).tar.gz"
 
-ENV_PATH         ?== "/tools_path"
+ENV_PATH         ?= "/tools_path"
 all: tools_srcs  dep install_libraries install_klayout  build_ngspice_lib install_ngspice  install_xyce clean_builds
 ############################################
 .ONESHELL:
