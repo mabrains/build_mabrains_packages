@@ -16,7 +16,8 @@ on:
 env:
   GITHUB_TOKEN: ${{ github.token }}
   DOCKER_BUILDKIT: 1
-
+  IMAGE: ghcr.io/mabrains/pdk_regression
+  KLAYOUT_VERSION: v0.28_dev
 jobs:
   BuildContainerImage:
     runs-on: ubuntu-latest
