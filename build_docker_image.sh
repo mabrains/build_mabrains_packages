@@ -1,2 +1,2 @@
 ##/bin/bash -f
-docker build -t pdk_regression .
+docker build -t ghcr.io/mabrains/pdk_regression .
