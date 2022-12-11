@@ -1,3 +1,3 @@
 ##/bin/bash -f
-IMAGE=ghcr.io/mabrains/pdk_regression
-docker build -t $(IMAGE) .
+export IMAGE: ghcr.io/mabrains/pdk_regression
+docker build -t $IMAGE .
