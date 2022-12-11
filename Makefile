@@ -7,7 +7,7 @@ ngspice_version     = "38"
 ngspice_link        ="https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/$(ngspice_version)/ngspice-$(ngspice_version).tar.gz"
 
 ENV_PATH         ?= "/tools_path"
-all: tools_srcs env_dir dep install_libraries install_klayout  build_ngspice_lib install_ngspice  install_xyce clean_builds
+all: tools_srcs  dep install_libraries install_klayout  build_ngspice_lib install_ngspice  install_xyce clean_builds
 ############################################
 .ONESHELL:
 install_libraries:
@@ -18,8 +18,7 @@ install_libraries:
 tools_srcs:
 	mkdir -p  tools_srcs
 
-env_dir:
-	mkdir -p  $(ENV_PATH)/modulefiles
+
 dep:
 	apt-get update -qq \
 	&& DEBIAN_FRONTEND=noninteractive apt-get -y  install \
@@ -62,7 +61,7 @@ install_ngspice: download_ngspice
 
 ############################################################
 .ONESHELL:
-download_xyce: tools_srcs env_dir
+download_xyce: tools_srcs 
 	cd tools_srcs ;\
 	git clone $(xyce_link);
 
