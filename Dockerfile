@@ -1,4 +1,3 @@
-
 # Copyright 2022 Mabrains
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +16,7 @@
 FROM ubuntu:22.04 as build
 
 COPY ./Makefile /Makefile
+COPY ./cmake_init.sh /cmake_init.sh
 RUN cd / && DEBIAN_FRONTEND="noninteractive" apt-get update
 RUN apt-get install make
 RUN cd / && DEBIAN_FRONTEND="noninteractive" make all
