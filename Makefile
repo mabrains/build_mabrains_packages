@@ -20,14 +20,20 @@
 
 
 
-klayout_version	    = "0.28"
+klayout_version	    = "v0.28_dev"
 klayout_link        = "https://github.com/KLayout/klayout.git"
 xyce_version        = "Release-7.6.0"
 xyce_link           = "https://github.com/Xyce/Xyce.git"
 ngspice_version     = "38"
 ngspice_link        = "https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/$(ngspice_version)/ngspice-$(ngspice_version).tar.gz"
+trilinos_version      = "12-12-1"
+trilinos_link         ="https://github.com/trilinos/Trilinos/archive/refs/tags/trilinos-release-$(trilinos_version).tar.gz"
+
+
 ENV_PATH           ?= "/tools_path"
-all: tools_srcs  dep install_libraries install_klayout  build_ngspice_lib install_ngspice  install_xyce clean_builds
+
+all: tools_srcs  dep  install_librarie install_libraries install_klayout  build_ngspice_lib  install_ngspice install_trilinos install_xyce
+
 ############################################
 .ONESHELL:
 install_libraries:
@@ -37,6 +43,25 @@ install_libraries:
 ######################################
 tools_srcs:
 	mkdir -p  tools_srcs
+###################################################3	
+.ONESHELL:
+install_librarie:
+	@apt update -y
+	@apt upgrade -y
+	@apt install -y vim htop build-essential git cmake autoconf automake flex bison texinfo libx11-dev libxaw7-dev libreadline-dev 
+	@apt install -y tcl-dev tk-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev tcsh csh libcairo2-dev libncurses-dev libgsl-dev
+	@apt install -y libgtk-3-dev clang gawk libffi-dev graphviz xdot pkg-config libboost-system-dev libboost-python-dev zlib1g-dev
+	@apt install -y libboost-filesystem-dev gengetopt help2man groff pod2pdf libtool octave liboctave-dev epstool transfig paraview
+	@apt install -y libhdf5-dev libvtk7-dev libboost-all-dev libcgal-dev libtinyxml-dev qtbase5-dev libvtk7-qt-dev libopenmpi-dev
+	@apt install -y xterm graphicsmagick ghostscript libhdf5-serial-dev vtk7 cython3 python3 python3-pip python3-numpy gcc g++ 
+	@apt install -y gfortran python3-matplotlib python3-scipy python3-h5py meld ffmpeg  make libfl-dev libfftw3-dev libsuitesparse-dev
+	@apt install -y libblas-dev liblapack-dev uidmap apt-transport-https ca-certificates curl gnupg m4 wget autopoint
+	@apt install -y wget perl python3 make g++ libgz libfl2 libfl-dev zlibc zlib1g zlib1g-dev ccache libgoogle-perftools-dev numactl perl-doc 
+	@apt install -y git autoconf flex bison graphviz cmake clang clang-format-11 gprof gtkwave iverilog
+	@apt install -y autoconf automake autotools-dev curl libmpc-dev libmpfr-dev libgmp-dev libusb-1.0-0-dev gawk build-essential bison flex 
+	@apt install -y texinfo gperf libtool patchutils bc zlib1g-dev device-tree-compiler pkg-config libexpat-dev libfl-dev
+	@apt autoremove
+	@apt clean
 
 
 dep:
@@ -49,6 +74,7 @@ dep:
 	&& rm -rf /var/lib/apt/lists/*
 
 
+###############################################
 ###############################################
 .ONESHELL:
 install_klayout: tools_srcs
@@ -70,8 +96,11 @@ install_klayout: tools_srcs
 	echo 'end klayout installation';\
 	echo 'end klayout installation';\
 	echo 'end klayout installation'
+
 ######################################################
-ONESHELL:
+######################################################
+######################################################
+.ONESHELL:
 download_ngspice: tools_srcs
 	cd tools_srcs ;\
 	wget -O ngspice-$(ngspice_version).tar.gz $(ngspice_link);\
@@ -100,7 +129,30 @@ install_ngspice: download_ngspice
 	make install
 	echo 'end install_ngspice'
 	echo 'end install_ngspice'
+############################################################
+.ONESHELL:
+download_trilinos: tools_srcs 
+	cd tools_srcs/ ;\
+	wget $(trilinos_link);\
+	tar zxvf trilinos-release-$(trilinos_version).tar.gz
 
+.ONESHELL:
+install_trilinos: download_trilinos
+	
+	mkdir -p  $(ENV_PATH)/tools/trilinos-$(trilinos_version);\
+	mkdir -p tools_srcs/Trilinos-trilinos-release-$(trilinos_version)/parallel_build ;\
+	cp cmake_init.sh tools_srcs/Trilinos-trilinos-release-$(trilinos_version)/parallel_build;\
+	cd /tools_srcs/Trilinos-trilinos-release-$(trilinos_version)/parallel_build;\
+	chmod +x cmake_init.sh;\
+	echo 'begin config';\
+	echo 'begin config';\
+	echo 'begin config';\
+	pwd ;\
+	ls ;\
+	./cmake_init.sh  $(ENV_PATH)/tools/trilinos-$(trilinos_version);\
+	make -j$$(nproc);\
+	make install
+            
 ############################################################
 .ONESHELL:
 download_xyce: tools_srcs 
@@ -118,9 +170,14 @@ install_xyce: download_xyce
 	echo 'begin config';\
 	echo 'begin config';\
 	echo 'begin config';\
+	g++ -v;\
+	g++ -v;\
 	echo 'begin config';\
+	echo $PATH ;\
 	echo 'begin config';\
-	../configure 
+	../configure CXXFLAGS="-O3" ARCHDIR="$(ENV_PATH)/tools/trilinos-$(trilinos_version)" CPPFLAGS="-I/usr/include/suitesparse" --enable-mpi CXX=mpicxx CC=mpicc F77=mpif77 --enable-stokhos --enable-amesos2 --enable-shared --enable-xyce-shareable --prefix=$(ENV_PATH)/tools/Xyce-$(xyce_version)
+	
+	cat config.log;\
 	make -j$$(nproc);\
 	make install
 
