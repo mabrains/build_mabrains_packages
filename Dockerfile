@@ -18,9 +18,9 @@ FROM ubuntu:22.04 as build
 COPY ./Makefile /Makefile
 COPY ./cmake_init.sh /cmake_init.sh
 COPY ./install_libraries.sh  /install_libraries.sh
-COPY ./gen_modulesfiles.py  /gen_modulesfiles.py
 RUN cd / && DEBIAN_FRONTEND="noninteractive" apt-get update
 RUN apt-get install make
 RUN cd / && chmod +x install_libraries.sh && DEBIAN_FRONTEND="noninteractive" ./install_libraries.sh
 RUN cd / && DEBIAN_FRONTEND="noninteractive" make all
 RUN cd / && DEBIAN_FRONTEND="noninteractive" make clean_builds
+RUN cd / && DEBIAN_FRONTEND="noninteractive" rm install_libraries.sh cmake_init.sh Makefile
