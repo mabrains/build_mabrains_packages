@@ -18,168 +18,253 @@
 # ----------------------------------------------- Tools Installation ----------------------------------------------
 # =================================================================================================================
 
+CC=g++
+SHELL:=/bin/bash
+
+# ==== Tools path ====
+ENV_PATH         ?= "/tool_path"
+PDK_ROOT         ?= "/tool_path/foundry/pdks/skywaters"
 
 
-klayout_version	    = "v0.28_dev"
-klayout_link        = "https://github.com/KLayout/klayout.git"
-xyce_version        = "Release-7.6.0"
-xyce_link           = "https://github.com/Xyce/Xyce.git"
-ngspice_version     = "38"
-ngspice_link        = "https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/$(ngspice_version)/ngspice-$(ngspice_version).tar.gz"
+# ==== Anaconda
+anaconda_version    = "3-2022.05"
+anaconda_link       = "https://repo.anaconda.com/archive/Anaconda$(anaconda_version)-Linux-x86_64.sh"
+
+# ==== DesignManger ====
+pythonlibs_version      = "head"
+
+# ==== PDKS ====
+open_pdks_version     = "1.0.329" 
+volare_pdk_version    = "sky130-fa87f8f4bbcc7255b6f0c0fb506960f531ae2392"
+
+open_pdks_link 		  = "https://github.com/RTimothyEdwards/open_pdks"
+volare_pdk_link       = "https://github.com/efabless/volare/releases/download/$(volare_pdk_version)/default.tar.xz"
+
+
+# ==== Checks & Layout tools links ====
+klayout_version	      = "v0.28"
+
+klayout_link          ="https://github.com/KLayout/klayout.git"
+
+# ==== Analog tools links ====
+ngspice_version       = "38"
 trilinos_version      = "12-12-1"
+xyce_version          = "Release-7.6.0"
+
+ngspice_link          ="https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/$(ngspice_version)/ngspice-$(ngspice_version).tar.gz"
 trilinos_link         ="https://github.com/trilinos/Trilinos/archive/refs/tags/trilinos-release-$(trilinos_version).tar.gz"
+xyce_link             ="https://github.com/Xyce/Xyce.git"
 
 
-ENV_PATH           ?= "/tools_path"
+# ==== MAKE TARGETS =====
 
-all: tools_srcs  dep  install_librarie install_libraries install_klayout  build_ngspice_lib  install_ngspice install_trilinos install_xyce
+utils             : build_utils install_anaconda
 
-############################################
+
+layout_checks     : tools_srcs env_dir utils install_klayout  
+
+all_analog        : tools_srcs env_dir utils install_ngspice_lib build_ngspice  build_xyce 
+
+
+
+clean             : clean_builds
+
+all               : tools_srcs env_dir utils layout_checks all_analog    clean env_info
+
+
+# =========================================================================================== 
+# ------------------------------- Dependiencies installation --------------------------------
+# ===========================================================================================
+
 .ONESHELL:
-install_libraries:
-	pip3 install docopt pandas gdsfactory gdstk
-	pip3 cache purge
+Anaconda$(anaconda_version)-Linux-x86_64.sh:
+	@cd tools_srcs/
+	@sh -c "if [ -f Anaconda$(anaconda_version)-Linux-x86_64.sh ]; then \
+				echo 'Anaconda$(anaconda_version)-Linux-x86_64.sh is already existing';\
+			else \
+                wget $(anaconda_link);\
+            fi"
 
-######################################
+.ONESHELL:
+install_anaconda: Anaconda$(anaconda_version)-Linux-x86_64.sh
+	@cd tools_srcs/
+	@sh -c "if [ -d $(ENV_PATH)/tools/anaconda-$(anaconda_version) ]; then \
+				echo 'Anaconda$(anaconda_version)-Linux-x86_64.sh is already installed';\
+			else \
+                sh ./Anaconda$(anaconda_version)-Linux-x86_64.sh -b -f -p $(ENV_PATH)/tools/anaconda-$(anaconda_version);\
+            fi"
+
+
+.ONESHELL:
+build_utils:
+	@mkdir -p $(ENV_PATH)/tools/pythonlibs-${pythonlibs_version}
+	@/usr/bin/pip3 install pandas docopt Jinja2
+	@/usr/bin/pip3 install --target=$(ENV_PATH)/tools/pythonlibs-${pythonlibs_version} -U pandas klayout gdsfactory docopt Jinja2 click pyyaml
+
+
+.ONESHELL:
+env_info:
+	@echo "Make sure the following two lines are set (or add them to ~/.bashrc)\n"
+	@echo "source /usr/share/modules/init/bash"
+	@echo "module use --append $(ENV_PATH)/modulefiles"
+
 tools_srcs:
-	mkdir -p  tools_srcs
-###################################################3	
+	@mkdir -p  tools_srcs
+
+env_dir:
+	@mkdir -p  $(ENV_PATH)/modulefiles
+
+pdks_dir:
+	@mkdir -p  $(PDK_ROOT)
+
+
+# =========================================================================================== 
+# --------------------------- Checks and Layout Tools Installation --------------------------
+# ===========================================================================================
+
 .ONESHELL:
-install_librarie:
-	@apt update -y
-	@apt upgrade -y
-	@apt install -y vim htop build-essential git cmake autoconf automake flex bison texinfo libx11-dev libxaw7-dev libreadline-dev 
-	@apt install -y tcl-dev tk-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev tcsh csh libcairo2-dev libncurses-dev libgsl-dev
-	@apt install -y libgtk-3-dev clang gawk libffi-dev graphviz xdot pkg-config libboost-system-dev libboost-python-dev zlib1g-dev
-	@apt install -y libboost-filesystem-dev gengetopt help2man groff pod2pdf libtool octave liboctave-dev epstool transfig paraview
-	@apt install -y libhdf5-dev libvtk7-dev libboost-all-dev libcgal-dev libtinyxml-dev qtbase5-dev libvtk7-qt-dev libopenmpi-dev
-	@apt install -y xterm graphicsmagick ghostscript libhdf5-serial-dev vtk7 cython3 python3 python3-pip python3-numpy gcc g++ 
-	@apt install -y gfortran python3-matplotlib python3-scipy python3-h5py meld ffmpeg  make libfl-dev libfftw3-dev libsuitesparse-dev
-	@apt install -y libblas-dev liblapack-dev uidmap apt-transport-https ca-certificates curl gnupg m4 wget autopoint
-	@apt install -y wget perl python3 make g++ libgz libfl2 libfl-dev zlibc zlib1g zlib1g-dev ccache libgoogle-perftools-dev numactl perl-doc 
-	@apt install -y git autoconf flex bison graphviz cmake clang clang-format-11 gprof gtkwave iverilog
-	@apt install -y autoconf automake autotools-dev curl libmpc-dev libmpfr-dev libgmp-dev libusb-1.0-0-dev gawk build-essential bison flex 
-	@apt install -y texinfo gperf libtool patchutils bc zlib1g-dev device-tree-compiler pkg-config libexpat-dev libfl-dev
-	@apt autoremove
-	@apt clean
+download_klayout:
+	@cd tools_srcs/
+	@sh -c "if [ -d klayout ]; then \
+				echo 'klayout src is already exist';\
+			else \
+				git clone $(klayout_link); \
+            fi"
 
-
-dep:
-	apt-get update -qq \
-	&& DEBIAN_FRONTEND=noninteractive apt-get -y  install \
-	build-essential gcc g++ make qtbase5-dev qttools5-dev autoconf libtool automake  gawk gfortran \
-	bison flex libxaw7-dev  lib32readline8 lib32readline-dev libreadline8 libreadline-dev libblas-dev liblapack-dev libatlas-base-dev \
-	libqt5xmlpatterns5-dev qtmultimedia5-dev libqt5multimediawidgets5 libqt5svg5-dev ruby ruby-dev python3 python3-dev libz-dev python3-pip git wget\
-	&& apt-get autoclean && apt-get clean && apt-get -y autoremove \
-	&& rm -rf /var/lib/apt/lists/*
-
-
-###############################################
-###############################################
 .ONESHELL:
-install_klayout: tools_srcs
-	echo 'begin klayout installation';\
-	cd tools_srcs ;\
-	git clone $(klayout_link);\
-	mkdir -p  $(ENV_PATH)/tools/klayout-$(klayout_version);\
-	pwd;\
-	pwd;\
-	ls;\
-	ls;\
-        cd klayout ;\
-	git checkout $(klayout_version);\
-	./build.sh -j$$(nproc) ;\
-	mv -f build-release/ bin-release/ $(ENV_PATH)/tools/klayout-$(klayout_version)/;\	
-	echo 'export PATH=/tools/klayout-$KLAYOUT_VERSION:$PATH; export LD_LIBRARY_PATH=/tools/klayout-$KLAYOUT_VERSION:$LD_LIBRARY_PATH;' >> /root/.bashrc
-	echo 'end klayout installation';\
-	echo 'end klayout installation';\
-	echo 'end klayout installation';\
-	echo 'end klayout installation';\
-	echo 'end klayout installation'
+install_klayout: tools_srcs env_dir download_klayout
+	@sh -c "if [ -d $(ENV_PATH)/tools/klayout-$(klayout_version) ]; then \
+				echo 'klayout is already installed';\
+			else \
+				mkdir -p  $(ENV_PATH)/tools/klayout-$(klayout_version);\
+                cd tools_srcs/klayout ;\
+				git checkout $(klayout_version);\
+				./build.sh -j$$(nproc) ;\
+				mv -f build-release/ bin-release/ $(ENV_PATH)/tools/klayout-$(klayout_version)/;\
+            fi"
 
-######################################################
-######################################################
-######################################################
+# =========================================================================================== 
+# -------------------------------- Analog Tools Installation --------------------------------
+# ===========================================================================================
 .ONESHELL:
-download_ngspice: tools_srcs
-	cd tools_srcs ;\
-	wget -O ngspice-$(ngspice_version).tar.gz $(ngspice_link);\
-	tar zxvf ngspice-$(ngspice_version).tar.gz
-	
-.ONESHELL:
-build_ngspice_lib: download_ngspice 
-	mkdir -p  $(ENV_PATH)/tools/ngspice-$(ngspice_version)/lib;\
-	mkdir -p tools_srcs/ngspice-$(ngspice_version)/build-lib ;\
-	cd tools_srcs/ngspice-$(ngspice_version)/;\
-	./compile_linux.sh 64
-	echo 'end build_ngspice_lib'
-	echo 'end build_ngspice_lib'
-	echo 'end build_ngspice_lib'
-	echo 'end build_ngspice_lib'
-	echo 'end build_ngspice_lib'
+download_ngspice: tools_srcs env_dir
+	@cd tools_srcs/
+	@sh -c "if [ -d ngspice-$(ngspice_version) ]; then \
+				echo 'ngspice src is already exist';\
+			else \
+				wget -O ngspice-$(ngspice_version).tar.gz $(ngspice_link);\
+				tar zxvf ngspice-$(ngspice_version).tar.gz;\
+            fi"
 
-	
+.ONESHELL:
+install_ngspice_lib: download_ngspice 
+	@sh -c "if [ -d $(ENV_PATH)/tools/ngspice-$(ngspice_version)/lib ]; then \
+				echo 'ngspice lib is already installed';\
+			else \
+				mkdir -p  $(ENV_PATH)/tools/ngspice-$(ngspice_version)/lib;\
+                mkdir -p tools_srcs/ngspice-$(ngspice_version)/build-lib ;\
+				cd tools_srcs/ngspice-$(ngspice_version)/build-lib;\
+				../configure prefix=$(ENV_PATH)/tools/ngspice-$(ngspice_version) --enable-cider --enable-xspice --enable-openmp --enable-pss --with-readline=yes --disable-debug --with-x --with-ngshared;\
+				make -j$$(nproc);\
+				make install;\
+            fi"
+
 .ONESHELL:
 install_ngspice: download_ngspice 
-	echo 'begin install_ngspice'
-	mkdir -p  $(ENV_PATH)/tools/ngspice-$(ngspice_version)/bin;\
-	cd  tools_srcs/ngspice-$(ngspice_version)/release;\
-	../configure prefix=$(ENV_PATH)/tools/ngspice-$(ngspice_version) --enable-cider --enable-xspice --enable-openmp --enable-pss --with-readline=yes --disable-debug --with-x	make -j$$(nproc);\
-	make -j$$(nproc);\
-	make install
-	echo 'end install_ngspice'
-	echo 'end install_ngspice'
-############################################################
+	@sh -c "if [ -d $(ENV_PATH)/tools/ngspice-$(ngspice_version)/bin ]; then \
+				echo 'ngspice is already installed';\
+			else \
+				mkdir -p  $(ENV_PATH)/tools/ngspice-$(ngspice_version)/bin;\
+                mkdir -p tools_srcs/ngspice-$(ngspice_version)/release ;\
+				cd  tools_srcs/ngspice-$(ngspice_version)/release;\
+				../configure prefix=$(ENV_PATH)/tools/ngspice-$(ngspice_version) --enable-cider --enable-xspice --enable-openmp --enable-pss --with-readline=yes --disable-debug --with-x
+				make -j$$(nproc);\
+				make install;\
+            fi"
+
 .ONESHELL:
-download_trilinos: tools_srcs 
-	cd tools_srcs/ ;\
-	wget $(trilinos_link);\
-	tar zxvf trilinos-release-$(trilinos_version).tar.gz
+build_ngspice: install_ngspice_lib install_ngspice 
+	pwd
+
+
+.ONESHELL:
+download_trilinos: tools_srcs env_dir
+	@cd tools_srcs/
+	@sh -c "if [ -d Trilinos-trilinos-release-$(trilinos_version) ]; then \
+				echo 'Trilinos src is already exist';\
+			else \
+				wget $(trilinos_link);\
+				tar zxvf trilinos-release-$(trilinos_version).tar.gz;\
+            fi"
 
 .ONESHELL:
 install_trilinos: download_trilinos
-	
-	mkdir -p  $(ENV_PATH)/tools/trilinos-$(trilinos_version);\
-	mkdir -p tools_srcs/Trilinos-trilinos-release-$(trilinos_version)/parallel_build ;\
-	cp cmake_init.sh tools_srcs/Trilinos-trilinos-release-$(trilinos_version)/parallel_build;\
-	cd /tools_srcs/Trilinos-trilinos-release-$(trilinos_version)/parallel_build;\
-	chmod +x cmake_init.sh;\
-	echo 'begin config';\
-	echo 'begin config';\
-	echo 'begin config';\
-	pwd ;\
-	ls ;\
-	./cmake_init.sh  $(ENV_PATH)/tools/trilinos-$(trilinos_version);\
-	make -j$$(nproc);\
-	make install
-            
-############################################################
+	@sh -c "if [ -d $(ENV_PATH)/tools/trilinos-$(trilinos_version) ]; then \
+				echo 'Trilinos is already installed';\
+			else \
+				mkdir -p  $(ENV_PATH)/tools/trilinos-$(trilinos_version);\
+                mkdir -p tools_srcs/Trilinos-trilinos-release-$(trilinos_version)/parallel_build ;\
+				cp cmake_init.sh tools_srcs/Trilinos-trilinos-release-$(trilinos_version)/parallel_build;\
+				cd tools_srcs/Trilinos-trilinos-release-$(trilinos_version)/parallel_build;\
+				chmod +x cmake_init.sh;\
+				./cmake_init.sh  $(ENV_PATH)/tools/trilinos-$(trilinos_version);\
+				make -j$$(nproc);\
+				make install;\
+            fi"
+
 .ONESHELL:
-download_xyce: tools_srcs 
-	cd tools_srcs ;\
-	git clone $(xyce_link)
+build_trilinos: install_trilinos
+	pwd
+	
+.ONESHELL:
+download_xyce: tools_srcs env_dir
+	@cd tools_srcs/
+	@sh -c "if [ -d Xyce ]; then \
+				echo 'Xyce src is already exist';\
+			else \
+				git clone $(xyce_link);\
+            fi"
 
 .ONESHELL:
 install_xyce: download_xyce
-	mkdir -p  $(ENV_PATH)/tools/Xyce-$(xyce_version);\
-	cd tools_srcs/Xyce ;\
-	git checkout $(xyce_version);\
-	./bootstrap;\
-	mkdir build_dir;\
-	cd build_dir;\
-	echo 'begin config';\
-	echo 'begin config';\
-	echo 'begin config';\
-	g++ -v;\
-	g++ -v;\
-	echo 'begin config';\
-	echo $PATH ;\
-	echo 'begin config';\
-	../configure CXXFLAGS="-O3" ARCHDIR="$(ENV_PATH)/tools/trilinos-$(trilinos_version)" CPPFLAGS="-I/usr/include/suitesparse" --enable-mpi CXX=mpicxx CC=mpicc F77=mpif77 --enable-stokhos --enable-amesos2 --enable-shared --enable-xyce-shareable --prefix=$(ENV_PATH)/tools/Xyce-$(xyce_version)
-	
-	cat config.log;\
-	make -j$$(nproc);\
-	make install
+	@sh -c "if [ -d $(ENV_PATH)/tools/Xyce-$(xyce_version) ]; then \
+				echo 'Xyce is already installed';\
+			else \
+				mkdir -p  $(ENV_PATH)/tools/Xyce-$(xyce_version);\
+                cd tools_srcs/Xyce ;\
+				git checkout $(xyce_version);\
+				./bootstrap;\
+				mkdir build_dir;\
+				cd build_dir;\
+				../configure CXXFLAGS="-O3" ARCHDIR="$(ENV_PATH)/tools/trilinos-$(trilinos_version)" CPPFLAGS="-I/usr/include/suitesparse" --enable-mpi CXX=mpicxx CC=mpicc F77=mpif77 --enable-stokhos --enable-amesos2 --enable-shared --enable-xyce-shareable --prefix=$(ENV_PATH)/tools/Xyce-$(xyce_version)
+				make -j$$(nproc);\
+				make install;\
+            fi"
+
+.ONESHELL:
+build_xyce: build_trilinos install_xyce
+	@echo "xyce finished" 
+
+
+# =========================================================================================== 
+# ---------------------------------------- CLEAN SRCS ---------------------------------------
+# ===========================================================================================
 
 clean_builds:
 	rm -rf tools_srcs
+
+# =========================================================================================== 
+# ------------------------------------------- HELP ------------------------------------------
+# ===========================================================================================
+
+help:
+	@echo "============= The following are some of the valid targets for this Makefile ============="
+	@echo "... all                        (the default if no target is provided                         )"
+	@echo "... clean                      (To clean tools installation data                             )"
+	@echo "... pdk                        (To install PDK supported (Sky130)                            )"
+	@echo "... layout_checks              (To build layout checks tools like klayout       )"
+	@echo "... all_analog                 (To build analog  open source tools like xyce, ngspice, ..  )"
+  
+	@echo "\n ======== The following are some of the valid targets for analog tools installation ========"  
+	@echo "... build_ngspice              (To build ngspice simulator and its libraries                 )"
+	@echo "... build_xyce                 (To build Xyce simulator and its libraries                    )"
