@@ -21,5 +21,4 @@ COPY ./install_libraries.sh  /install_libraries.sh
 RUN cd / && DEBIAN_FRONTEND="noninteractive" apt-get update
 RUN cd / && chmod +x install_libraries.sh && DEBIAN_FRONTEND="noninteractive" ./install_libraries.sh
 RUN cd / && DEBIAN_FRONTEND="noninteractive" make all
-RUN cd / && DEBIAN_FRONTEND="noninteractive" make clean_builds
 RUN cd / && DEBIAN_FRONTEND="noninteractive" rm install_libraries.sh cmake_init.sh Makefile
