@@ -50,15 +50,15 @@ xyce_link             ="https://github.com/Xyce/Xyce.git"
 
 utils             : build_utils 
 
-layout_checks     : tools_srcs env_dir utils install_klayout  
+layout_checks     : tools_srcs  utils install_klayout  
 
-all_analog        : tools_srcs env_dir utils install_ngspice_lib build_ngspice  build_xyce 
+all_analog        : tools_srcs  utils install_ngspice_lib build_ngspice  build_xyce 
 
 
 
 clean             : clean_builds
 
-all               : tools_srcs env_dir utils layout_checks all_analog    clean env_info
+all               : tools_srcs  utils layout_checks all_analog    clean env_info
 
 
 # =========================================================================================== 
@@ -82,8 +82,6 @@ env_info:
 tools_srcs:
 	@mkdir -p  tools_srcs
 
-env_dir:
-	@mkdir -p  $(ENV_PATH)/modulefiles
 
 pdks_dir:
 	@mkdir -p  $(PDK_ROOT)
