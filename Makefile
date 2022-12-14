@@ -60,7 +60,6 @@ xyce_link             ="https://github.com/Xyce/Xyce.git"
 
 utils             : build_utils install_anaconda
 
-
 layout_checks     : tools_srcs env_dir utils install_klayout  
 
 all_analog        : tools_srcs env_dir utils install_ngspice_lib build_ngspice  build_xyce 
@@ -94,14 +93,13 @@ install_anaconda: Anaconda$(anaconda_version)-Linux-x86_64.sh
                 sh ./Anaconda$(anaconda_version)-Linux-x86_64.sh -b -f -p $(ENV_PATH)/tools/anaconda-$(anaconda_version);\
             fi"
 
-
 .ONESHELL:
 build_utils:
 	@mkdir -p $(ENV_PATH)/tools/pythonlibs-${pythonlibs_version}
 	@/usr/bin/pip3 install pandas docopt Jinja2
 	@/usr/bin/pip3 install --target=$(ENV_PATH)/tools/pythonlibs-${pythonlibs_version} -U pandas klayout gdsfactory docopt Jinja2 click pyyaml
 
-
+	
 .ONESHELL:
 env_info:
 	@echo "Make sure the following two lines are set (or add them to ~/.bashrc)\n"
@@ -116,6 +114,7 @@ env_dir:
 
 pdks_dir:
 	@mkdir -p  $(PDK_ROOT)
+
 
 
 # =========================================================================================== 
@@ -144,6 +143,7 @@ install_klayout: tools_srcs env_dir download_klayout
 				echo 'export PATH=/tools/klayout-$KLAYOUT_VERSION:$PATH; export LD_LIBRARY_PATH=/tools/klayout-$KLAYOUT_VERSION:$LD_LIBRARY_PATH;' >> /root/.bashrc;\
             fi"
 
+
 # =========================================================================================== 
 # -------------------------------- Analog Tools Installation --------------------------------
 # ===========================================================================================
@@ -169,7 +169,7 @@ install_ngspice_lib: download_ngspice
 				make -j$$(nproc);\
 				make install;\
 				
-            fi"
+			fi"
 
 .ONESHELL:
 install_ngspice: download_ngspice 
@@ -184,7 +184,7 @@ install_ngspice: download_ngspice
 				make install;\
 				echo 'export PATH=/tools/ngspice-$(ngspice_version):$PATH;' >> /root/.bashrc;\
 
-            fi"
+			fi"
 
 .ONESHELL:
 build_ngspice: install_ngspice_lib install_ngspice 
