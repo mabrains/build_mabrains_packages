@@ -26,19 +26,9 @@ ENV_PATH         ?= "/tool_path"
 PDK_ROOT         ?= "/tool_path/foundry/pdks/skywaters"
 
 
-# ==== Anaconda
-anaconda_version    = "3-2022.05"
-anaconda_link       = "https://repo.anaconda.com/archive/Anaconda$(anaconda_version)-Linux-x86_64.sh"
 
 # ==== DesignManger ====
 pythonlibs_version      = "head"
-
-# ==== PDKS ====
-open_pdks_version     = "1.0.329" 
-volare_pdk_version    = "sky130-fa87f8f4bbcc7255b6f0c0fb506960f531ae2392"
-
-open_pdks_link 		  = "https://github.com/RTimothyEdwards/open_pdks"
-volare_pdk_link       = "https://github.com/efabless/volare/releases/download/$(volare_pdk_version)/default.tar.xz"
 
 
 # ==== Checks & Layout tools links ====
@@ -58,7 +48,7 @@ xyce_link             ="https://github.com/Xyce/Xyce.git"
 
 # ==== MAKE TARGETS =====
 
-utils             : build_utils install_anaconda
+utils             : build_utils 
 
 layout_checks     : tools_srcs env_dir utils install_klayout  
 
@@ -75,23 +65,6 @@ all               : tools_srcs env_dir utils layout_checks all_analog    clean e
 # ------------------------------- Dependiencies installation --------------------------------
 # ===========================================================================================
 
-.ONESHELL:
-Anaconda$(anaconda_version)-Linux-x86_64.sh:
-	@cd tools_srcs/
-	@sh -c "if [ -f Anaconda$(anaconda_version)-Linux-x86_64.sh ]; then \
-				echo 'Anaconda$(anaconda_version)-Linux-x86_64.sh is already existing';\
-			else \
-                wget $(anaconda_link);\
-            fi"
-
-.ONESHELL:
-install_anaconda: Anaconda$(anaconda_version)-Linux-x86_64.sh
-	@cd tools_srcs/
-	@sh -c "if [ -d $(ENV_PATH)/tools/anaconda-$(anaconda_version) ]; then \
-				echo 'Anaconda$(anaconda_version)-Linux-x86_64.sh is already installed';\
-			else \
-                sh ./Anaconda$(anaconda_version)-Linux-x86_64.sh -b -f -p $(ENV_PATH)/tools/anaconda-$(anaconda_version);\
-            fi"
 
 .ONESHELL:
 build_utils:
