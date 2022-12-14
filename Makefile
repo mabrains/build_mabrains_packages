@@ -29,6 +29,7 @@ ENV_PATH         ?= "/tool_path"
 
 
 # ==== Checks & Layout tools links ====
+klayout_version	      = "v0.28"
 
 klayout_link          ="https://github.com/KLayout/klayout.git"
 
@@ -43,33 +44,22 @@ xyce_link             ="https://github.com/Xyce/Xyce.git"
 
 
 # ==== MAKE TARGETS =====
-all               : tools_srcs  build_utils install_klayout install_ngspice_lib build_ngspice  build_xyce    clean_builds env_info
+
+all               : tools_srcs  build_utils install_klayout build_ngspice  build_xyce     clean_builds 
 
 
 # =========================================================================================== 
 # ------------------------------- Dependiencies installation --------------------------------
 # ===========================================================================================
 
-
 .ONESHELL:
 build_utils:
-	@mkdir -p $(ENV_PATH)/tools/pythonlibs-${pythonlibs_version}
-	@/usr/bin/pip3 install pandas docopt Jinja2
-	@/usr/bin/pip3 install --target=$(ENV_PATH)/tools/pythonlibs-${pythonlibs_version} -U pandas klayout gdsfactory docopt Jinja2 click pyyaml
+	@/usr/bin/pip3 install pandas docopt Jinja2  klayout gdsfactory docopt  click pyyaml
 
 	
-.ONESHELL:
-env_info:
-	@echo "Make sure the following two lines are set (or add them to ~/.bashrc)\n"
 
 tools_srcs:
 	@mkdir -p  tools_srcs
-
-
-pdks_dir:
-	@mkdir -p  $(PDK_ROOT)
-
-
 
 # =========================================================================================== 
 # --------------------------- Checks and Layout Tools Installation --------------------------
@@ -85,7 +75,7 @@ download_klayout:
             fi"
 
 .ONESHELL:
-install_klayout: tools_srcs env_dir download_klayout
+install_klayout: tools_srcs  download_klayout
 	@sh -c "if [ -d $(ENV_PATH)/tools/klayout-$(klayout_version) ]; then \
 				echo 'klayout is already installed';\
 			else \
@@ -102,7 +92,7 @@ install_klayout: tools_srcs env_dir download_klayout
 # -------------------------------- Analog Tools Installation --------------------------------
 # ===========================================================================================
 .ONESHELL:
-download_ngspice: tools_srcs env_dir
+download_ngspice: tools_srcs 
 	@cd tools_srcs/
 	@sh -c "if [ -d ngspice-$(ngspice_version) ]; then \
 				echo 'ngspice src is already exist';\
@@ -112,12 +102,12 @@ download_ngspice: tools_srcs env_dir
             fi"
 
 .ONESHELL:
-install_ngspice: download_ngspice 
+build_ngspice: download_ngspice 
 	@sh -c "if [ -d $(ENV_PATH)/tools/ngspice-$(ngspice_version)/lib ]; then \
 				echo 'ngspice lib is already installed';\
 			else \
 				mkdir -p  $(ENV_PATH)/tools/ngspice-$(ngspice_version)/lib;\
-                mkdir -p tools_srcs/ngspice-$(ngspice_version)/build-lib ;\
+                		mkdir -p tools_srcs/ngspice-$(ngspice_version)/build-lib ;\
 				cd tools_srcs/ngspice-$(ngspice_version)/build-lib;\
 				../configure prefix=$(ENV_PATH)/tools/ngspice-$(ngspice_version) --enable-cider --enable-xspice --enable-openmp --enable-pss --with-readline=yes --disable-debug --with-x --with-ngshared;\
 				make -j$$(nproc);\
@@ -138,12 +128,9 @@ install_ngspice: download_ngspice
 
 			fi"
 
-.ONESHELL:
-build_ngspice: install_ngspice  
-
 
 .ONESHELL:
-download_trilinos: tools_srcs env_dir
+download_trilinos: tools_srcs 
 	@cd tools_srcs/
 	@sh -c "if [ -d Trilinos-trilinos-release-$(trilinos_version) ]; then \
 				echo 'Trilinos src is already exist';\
@@ -153,7 +140,7 @@ download_trilinos: tools_srcs env_dir
             fi"
 
 .ONESHELL:
-install_trilinos: download_trilinos
+build_trilinos: download_trilinos
 	@sh -c "if [ -d $(ENV_PATH)/tools/trilinos-$(trilinos_version) ]; then \
 				echo 'Trilinos is already installed';\
 			else \
@@ -167,12 +154,9 @@ install_trilinos: download_trilinos
 				make install;\
             fi"
 
-.ONESHELL:
-build_trilinos: install_trilinos
-	pwd
 	
 .ONESHELL:
-download_xyce: tools_srcs env_dir
+download_xyce: tools_srcs 
 	@cd tools_srcs/
 	@sh -c "if [ -d Xyce ]; then \
 				echo 'Xyce src is already exist';\
@@ -181,12 +165,12 @@ download_xyce: tools_srcs env_dir
             fi"
 
 .ONESHELL:
-install_xyce: download_xyce
+build_xyce: build_trilinos download_xyce
 	@sh -c "if [ -d $(ENV_PATH)/tools/Xyce-$(xyce_version) ]; then \
 				echo 'Xyce is already installed';\
 			else \
 				mkdir -p  $(ENV_PATH)/tools/Xyce-$(xyce_version);\
-                cd tools_srcs/Xyce ;\
+                		cd tools_srcs/Xyce ;\
 				git checkout $(xyce_version);\
 				./bootstrap;\
 				mkdir build_dir;\
@@ -196,10 +180,6 @@ install_xyce: download_xyce
 				make install;\
             fi"
 
-.ONESHELL:
-build_xyce: build_trilinos install_xyce
-	@echo "xyce finished" 
-
 
 # =========================================================================================== 
 # ---------------------------------------- CLEAN SRCS ---------------------------------------
@@ -207,17 +187,3 @@ build_xyce: build_trilinos install_xyce
 
 clean_builds:
 	rm -rf tools_srcs
-
-# =========================================================================================== 
-# ------------------------------------------- HELP ------------------------------------------
-# ===========================================================================================
-
-help:
-	@echo "============= The following are some of the valid targets for this Makefile ============="
-	@echo "... all                        (the default if no target is provided                         )"
-	@echo "... clean                      (To clean tools installation data                             )"
-	@echo "... all_analog                 (To build analog  open source tools like xyce, ngspice, ..  )"
-  
-	@echo "\n ======== The following are some of the valid targets for analog tools installation ========"  
-	@echo "... build_ngspice              (To build ngspice simulator and its libraries                 )"
-	@echo "... build_xyce                 (To build Xyce simulator and its libraries                    )"
