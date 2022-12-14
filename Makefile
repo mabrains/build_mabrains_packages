@@ -23,16 +23,12 @@ SHELL:=/bin/bash
 
 # ==== Tools path ====
 ENV_PATH         ?= "/tool_path"
-PDK_ROOT         ?= "/tool_path/foundry/pdks/skywaters"
 
 
 
-# ==== DesignManger ====
-pythonlibs_version      = "head"
 
 
 # ==== Checks & Layout tools links ====
-klayout_version	      = "v0.28"
 
 klayout_link          ="https://github.com/KLayout/klayout.git"
 
@@ -47,18 +43,7 @@ xyce_link             ="https://github.com/Xyce/Xyce.git"
 
 
 # ==== MAKE TARGETS =====
-
-utils             : build_utils 
-
-layout_checks     : tools_srcs  utils install_klayout  
-
-all_analog        : tools_srcs  utils install_ngspice_lib build_ngspice  build_xyce 
-
-
-
-clean             : clean_builds
-
-all               : tools_srcs  utils layout_checks all_analog    clean env_info
+all               : tools_srcs  build_utils install_klayout install_ngspice_lib build_ngspice  build_xyce    clean_builds env_info
 
 
 # =========================================================================================== 
@@ -127,7 +112,7 @@ download_ngspice: tools_srcs env_dir
             fi"
 
 .ONESHELL:
-install_ngspice_lib: download_ngspice 
+install_ngspice: download_ngspice 
 	@sh -c "if [ -d $(ENV_PATH)/tools/ngspice-$(ngspice_version)/lib ]; then \
 				echo 'ngspice lib is already installed';\
 			else \
@@ -140,8 +125,6 @@ install_ngspice_lib: download_ngspice
 				
 			fi"
 
-.ONESHELL:
-install_ngspice: download_ngspice 
 	@sh -c "if [ -d $(ENV_PATH)/tools/ngspice-$(ngspice_version)/bin ]; then \
 				echo 'ngspice is already installed';\
 			else \
@@ -156,8 +139,7 @@ install_ngspice: download_ngspice
 			fi"
 
 .ONESHELL:
-build_ngspice: install_ngspice_lib install_ngspice 
-	pwd
+build_ngspice: install_ngspice  
 
 
 .ONESHELL:
@@ -234,8 +216,6 @@ help:
 	@echo "============= The following are some of the valid targets for this Makefile ============="
 	@echo "... all                        (the default if no target is provided                         )"
 	@echo "... clean                      (To clean tools installation data                             )"
-	@echo "... pdk                        (To install PDK supported (Sky130)                            )"
-	@echo "... layout_checks              (To build layout checks tools like klayout       )"
 	@echo "... all_analog                 (To build analog  open source tools like xyce, ngspice, ..  )"
   
 	@echo "\n ======== The following are some of the valid targets for analog tools installation ========"  
