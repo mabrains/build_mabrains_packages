@@ -76,8 +76,6 @@ build_utils:
 .ONESHELL:
 env_info:
 	@echo "Make sure the following two lines are set (or add them to ~/.bashrc)\n"
-	@echo "source /usr/share/modules/init/bash"
-	@echo "module use --append $(ENV_PATH)/modulefiles"
 
 tools_srcs:
 	@mkdir -p  tools_srcs
