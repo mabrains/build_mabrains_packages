@@ -11,7 +11,7 @@ This repo builds docker containers for mabrains projects.
 
 ## Running Locally 
 ```bash
-docker run -it -v $PDK_ROOT:$PDK_ROOT -e PDK_ROOT=$PDK_ROOT --env=DISPLAY --volume=/tmp/.X11-unix:/tmp/.X11-unix --net=host ghcr.io/mohamed-gomaa1/pdk_regression
+docker run -it -v $PDK_ROOT:$PDK_ROOT -e PDK_ROOT=$PDK_ROOT --env=DISPLAY --volume=/tmp/.X11-unix:/tmp/.X11-unix --net=host ghcr.io/mabrains/pdk_regression
  ```
 * Run the BuildContainerImage
 ```bash
