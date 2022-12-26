@@ -36,7 +36,7 @@ klayout_link          ="https://github.com/KLayout/klayout.git"
 # ==== Analog tools links ====
 ngspice_version       = "38"
 trilinos_version      = "12-12-1"
-xyce_version          = "Public_Release-7.6.0"
+xyce_version          = "Release-7.6.0"
 
 ngspice_link          ="https://downloads.sourceforge.net/project/ngspice/ng-spice-rework/$(ngspice_version)/ngspice-$(ngspice_version).tar.gz"
 trilinos_link         ="https://github.com/trilinos/Trilinos/archive/refs/tags/trilinos-release-$(trilinos_version).tar.gz"
@@ -45,7 +45,7 @@ xyce_link             ="https://github.com/Xyce/Xyce.git"
 
 # ==== MAKE TARGETS =====
 
-all               : tools_srcs  build_utils install_klayout build_ngspice  build_xyce     clean_builds 
+all               : tools_srcs build_utils install_klayout build_ngspice  build_xyce   clean_builds 
 
 
 # =========================================================================================== 
@@ -83,9 +83,9 @@ install_klayout: tools_srcs  download_klayout
                 		cd tools_srcs/klayout ;\
 				git checkout $(klayout_version);\
 				./build.sh -j$$(nproc) ;\
-				mv -f build-release/ bin-release/ $(ENV_PATH)/tools/klayout-$(klayout_version)/;\
-				echo 'export PATH=/tools/klayout-$KLAYOUT_VERSION:$PATH; export LD_LIBRARY_PATH=/tools/klayout-$KLAYOUT_VERSION:$LD_LIBRARY_PATH;' >> /root/.bashrc;\
-            fi"
+				mv -f build-release/ bin-release/ $(ENV_PATH)/tools/klayout-$(klayout_version)/
+
+		fi"
 
 
 # =========================================================================================== 
@@ -123,8 +123,8 @@ build_ngspice: download_ngspice
 				cd  tools_srcs/ngspice-$(ngspice_version)/release;\
 				../configure prefix=$(ENV_PATH)/tools/ngspice-$(ngspice_version) --enable-cider --enable-xspice --enable-openmp --enable-pss --with-readline=yes --disable-debug --with-x
 				make -j$$(nproc);\
-				make install;\
-				echo 'export PATH=/tools/ngspice-$(ngspice_version):$PATH;' >> /root/.bashrc;\
+				make install
+
 
 			fi"
 
@@ -174,12 +174,11 @@ build_xyce: build_trilinos download_xyce
 				git checkout $(xyce_version);\
 				./bootstrap;\
 				mkdir build_dir;\
-				cd build_dir;\
+	 			cd build_dir;\
 				../configure CXXFLAGS="-O3" ARCHDIR="$(ENV_PATH)/tools/trilinos-$(trilinos_version)" CPPFLAGS="-I/usr/include/suitesparse" --enable-mpi CXX=mpicxx CC=mpicc F77=mpif77 --enable-stokhos --enable-amesos2 --enable-shared --enable-xyce-shareable --prefix=$(ENV_PATH)/tools/Xyce-$(xyce_version)
 				make -j$$(nproc);\
 				make install;\
             fi"
-
 
 # =========================================================================================== 
 # ---------------------------------------- CLEAN SRCS ---------------------------------------
