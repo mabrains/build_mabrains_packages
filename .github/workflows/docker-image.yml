@@ -1,0 +1,45 @@
+###############################################################
+# Copyright 2022 Mabrains
+###############################################################
+
+name: Build Docker Images
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_run:
+    workflows: [ "Build Docker Images Base" ]
+    types:
+      - completed
+  push:
+    paths:
+      - docker_image/**
+  workflow_dispatch:
+ 
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+  DOCKER_BUILDKIT: 1
+  IMAGE: ghcr.io/mabrains/pdk_regression
+
+jobs:
+  BuildContainerImage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run script 
+        run:  |
+             cd docker_image
+             echo '${{ github.token }}' | docker login ghcr.io -u gha --password-stdin
+             chmod +x build_docker_image.sh
+             ./build_docker_image.sh
+        shell: bash
+      - name: Push container image to registry
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: pyTooling/Actions/with-post-step@r0
+        with:
+          main: |
+            echo '${{ github.token }}' | docker login ghcr.io -u gha --password-stdin
+            docker push "$IMAGE"
+          post: docker logout ghcr.io

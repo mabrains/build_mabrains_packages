@@ -13,14 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# syntax = docker/dockerfile:1.0-experimental
-FROM ubuntu:22.04 as build
+FROM ghcr.io/mabrains/ubuntu_with_libraries_base as build
 COPY ./Makefile /Makefile
 COPY ./bash.sh /bash.sh
 COPY ./cmake_init.sh /cmake_init.sh
-COPY ./install_libraries.sh  /install_libraries.sh
-RUN cd / && DEBIAN_FRONTEND="noninteractive" apt-get update
-RUN cd / && chmod a+x install_libraries.sh && DEBIAN_FRONTEND="noninteractive" ./install_libraries.sh
 RUN cd / && DEBIAN_FRONTEND="noninteractive" make all
 RUN cd / && chmod a+x bash.sh && DEBIAN_FRONTEND="noninteractive" ./bash.sh
-RUN cd / && DEBIAN_FRONTEND="noninteractive" rm install_libraries.sh cmake_init.sh Makefile bash.sh
+RUN cd / && DEBIAN_FRONTEND="noninteractive" rm  cmake_init.sh Makefile bash.sh
