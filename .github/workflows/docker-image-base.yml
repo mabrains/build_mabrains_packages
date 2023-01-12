@@ -18,7 +18,7 @@ env:
   GITHUB_TOKEN: ${{ github.token }}
   DOCKER_BUILDKIT: 1
   IMAGE: ghcr.io/mabrains/ubuntu_with_libraries_base
-  KLAYOUT_VERSION: v0.28_dev
+
 
 jobs:
   BuildContainerImage:
